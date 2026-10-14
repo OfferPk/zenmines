@@ -5,7 +5,7 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "node scripts/build.js",
+    "build": "node scripts/generate-icons.js && node scripts/build.js",
     "test": "node test/logic.test.js",
     "generate-icons": "node scripts/generate-icons.js"
   },
