@@ -1,0 +1,35 @@
+{
+  "name": "zenmines",
+  "version": "1.0.0",
+  "description": "ZenMines: sleek, modern offline minesweeper (vanilla JS + Capacitor Android)",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "test": "node test/logic.test.js",
+    "generate-icons": "node scripts/generate-icons.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OfferPk/zenmines.git"
+  },
+  "keywords": [
+    "minesweeper",
+    "offline-game",
+    "casual-game",
+    "capacitor",
+    "pwa",
+    "puzzle"
+  ],
+  "author": "OfferPk",
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/core": "^8.5.3"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.3"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
