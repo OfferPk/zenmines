@@ -328,6 +328,8 @@
       modeFlagBtn.classList.add('active');
       modeRevealBtn.classList.remove('active');
     }
+    modeRevealBtn.setAttribute('aria-pressed', String(tapMode === 'reveal'));
+    modeFlagBtn.setAttribute('aria-pressed', String(tapMode === 'flag'));
   }
 
   function applyTheme(theme) {
@@ -337,6 +339,9 @@
       localStorage.setItem('zenmines_theme', theme);
     } catch (e) {}
     themeToggleBtn.textContent = theme === 'dark' ? '🌙' : (theme === 'light' ? '☀️' : '⚡');
+    var nextTheme = theme === 'dark' ? 'light' : (theme === 'light' ? 'neon' : 'dark');
+    themeToggleBtn.setAttribute('aria-label', 'Switch to ' + nextTheme + ' theme');
+    themeToggleBtn.title = 'Switch to ' + nextTheme + ' theme';
   }
 
   function cycleTheme() {
@@ -381,7 +386,25 @@
     document.getElementById('stat-best-int').textContent = iTime ? formatTime(iTime) : '--';
     document.getElementById('stat-best-exp').textContent = eTime ? formatTime(eTime) : '--';
 
-    statsModal.classList.add('open');
+    openModal(statsModal);
+  }
+
+  var modalOpener = null;
+
+  function openModal(modal) {
+    modalOpener = document.activeElement;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    var closeButton = modal.querySelector('.close-modal-btn');
+    if (closeButton) closeButton.focus();
+  }
+
+  function closeModal(modal) {
+    if (!modal || !modal.classList.contains('open')) return;
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    if (modalOpener && typeof modalOpener.focus === 'function') modalOpener.focus();
+    modalOpener = null;
   }
 
   // Initialize
@@ -396,6 +419,7 @@
 
     // Sound toggle state
     soundToggleBtn.textContent = Audio.isSoundEnabled() ? '🔊' : '🔇';
+    soundToggleBtn.setAttribute('aria-pressed', String(Audio.isSoundEnabled()));
 
     // Event Listeners
     faceBtn.addEventListener('click', function () {
@@ -426,6 +450,7 @@
       var nextState = !Audio.isSoundEnabled();
       Audio.setSoundEnabled(nextState);
       soundToggleBtn.textContent = nextState ? '🔊' : '🔇';
+      soundToggleBtn.setAttribute('aria-pressed', String(nextState));
       Audio.playClick();
     });
 
@@ -441,15 +466,26 @@
 
     helpBtn.addEventListener('click', function () {
       Audio.playClick();
-      helpModal.classList.add('open');
+      openModal(helpModal);
     });
 
     document.querySelectorAll('.close-modal-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         Audio.playClick();
-        statsModal.classList.remove('open');
-        helpModal.classList.remove('open');
+        closeModal(btn.closest('.modal-overlay'));
       });
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(function (modal) {
+      modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeModal(modal);
+      });
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        closeModal(document.querySelector('.modal-overlay.open'));
+      }
     });
 
     window.addEventListener('resize', function () {
