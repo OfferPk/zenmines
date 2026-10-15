@@ -4,4 +4,6 @@
     <string name="title_activity_main">ZenMines</string>
     <string name="package_name">pk.offer.zenmines</string>
     <string name="custom_url_scheme">pk.offer.zenmines</string>
+    <!-- Google AdMob sample TEST app id. Never ship real IDs from this repo. -->
+    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
 </resources>

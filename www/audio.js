@@ -61,10 +61,10 @@
 
   var ZenAudio = {
     init: function () {
-      if (typeof localStorage !== 'undefined') {
+      try {
         soundEnabled = localStorage.getItem('zenmines_sound') !== '0';
         hapticsEnabled = localStorage.getItem('zenmines_haptics') !== '0';
-      }
+      } catch (e) { /* storage unavailable: keep defaults */ }
       // Unlock audio on first gesture
       var unlock = function () {
         getAudioContext();
@@ -85,9 +85,9 @@
 
     setSoundEnabled: function (enabled) {
       soundEnabled = !!enabled;
-      if (typeof localStorage !== 'undefined') {
+      try {
         localStorage.setItem('zenmines_sound', soundEnabled ? '1' : '0');
-      }
+      } catch (e) { /* storage unavailable */ }
     },
 
     isHapticsEnabled: function () {
@@ -96,9 +96,9 @@
 
     setHapticsEnabled: function (enabled) {
       hapticsEnabled = !!enabled;
-      if (typeof localStorage !== 'undefined') {
+      try {
         localStorage.setItem('zenmines_haptics', hapticsEnabled ? '1' : '0');
-      }
+      } catch (e) { /* storage unavailable */ }
     },
 
     playClick: function () {

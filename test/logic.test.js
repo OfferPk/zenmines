@@ -284,6 +284,69 @@ test('Serializes and restores game state accurately', () => {
   assert.strictEqual(game2.grid[0][0].flagged, true);
 });
 
+// 10. Pause / resume
+test('Pause freezes the clock and blocks moves; resume restarts it', () => {
+  const game = new ZenMines({ seed: 7, difficulty: 'intermediate' });
+  game.reveal(8, 8);
+  assert.strictEqual(game.status, 'playing');
+  game.startTime = Date.now() - 5000; // pretend 5s elapsed
+  assert.strictEqual(game.pause(), true);
+  assert.strictEqual(game.isPaused(), true);
+  const frozen = game.getElapsedTime();
+  assert.ok(frozen >= 5 && frozen <= 6, 'elapsed ~5s, got ' + frozen);
+  // find a hidden cell and try to act on it while paused
+  let target = null;
+  for (let r = 0; r < game.rows && !target; r++) for (let c = 0; c < game.cols && !target; c++) if (!game.grid[r][c].revealed) target = [r, c];
+  assert.strictEqual(game.toggleFlag(target[0], target[1]).changed, false);
+  assert.strictEqual(game.reveal(target[0], target[1]).changed, false);
+  assert.strictEqual(game.pause(), false, 'double pause is a no-op');
+  assert.strictEqual(game.resume(), true);
+  assert.strictEqual(game.isPaused(), false);
+  assert.ok(game.getElapsedTime() >= frozen);
+  assert.strictEqual(game.toggleFlag(target[0], target[1]).changed, true);
+});
+
+test('Restored in-progress game starts paused and keeps elapsed time', () => {
+  const game = new ZenMines({ seed: 9, difficulty: 'intermediate' });
+  game.reveal(4, 4);
+  game.startTime = Date.now() - 42000;
+  const restored = ZenMines.deserialize(game.serialize());
+  assert.strictEqual(restored.status, 'playing');
+  assert.strictEqual(restored.isPaused(), true);
+  assert.ok(restored.getElapsedTime() >= 42);
+  restored.resume();
+  assert.ok(restored.getElapsedTime() >= 42);
+});
+
+test('Flag before first dig keeps the clock running from the flag', () => {
+  const game = new ZenMines({ seed: 3 });
+  game.toggleFlag(0, 0);
+  assert.strictEqual(game.status, 'playing');
+  const t0 = game.startTime;
+  assert.ok(t0);
+  game.reveal(5, 5);
+  assert.strictEqual(game.startTime, t0, 'first dig must not reset the clock');
+  assert.ok(game.status === 'playing' || game.status === 'won');
+});
+
+// 11. Journey stages
+test('Journey has 24 valid, increasingly hard stages', () => {
+  const J = ZenMines.JOURNEY;
+  assert.strictEqual(J.length, 24);
+  let prevDensity = 0;
+  J.forEach((s, i) => {
+    assert.strictEqual(s.stage, i + 1);
+    assert.ok(s.rows * s.cols - s.mines >= 9, 'room for safe opening');
+    const g = new ZenMines({ rows: s.rows, cols: s.cols, mines: s.mines, difficulty: 'journey', seed: i + 1 });
+    assert.strictEqual(g.rows, s.rows);
+    assert.strictEqual(g.cols, s.cols);
+    assert.strictEqual(g.minesCount, s.mines);
+    const d = s.mines / (s.rows * s.cols);
+    assert.ok(d >= prevDensity - 0.02, 'density should not drop sharply at stage ' + s.stage);
+    prevDensity = d;
+  });
+});
+
 console.log(`\nResults: ${passedTests}/${totalTests} tests passed.\n`);
 if (passedTests !== totalTests) {
   process.exit(1);

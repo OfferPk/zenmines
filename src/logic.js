@@ -74,12 +74,28 @@
     this.startTime = null;
     this.endTime = null;
     this.elapsedSeconds = 0;
+    this.paused = false;
 
     this.grid = [];
     this.initGrid();
   }
 
   ZenMines.DIFFICULTIES = DIFFICULTIES;
+
+  /**
+   * Journey mode: 24 hand-tuned stages that grow in size and mine density.
+   * Boards are taller than wide so they fit portrait phones.
+   */
+  var JOURNEY = [
+    [6, 6, 4], [7, 7, 6], [8, 8, 8], [8, 8, 9], [9, 9, 11], [10, 9, 12],
+    [10, 10, 14], [11, 10, 16], [12, 10, 18], [12, 11, 21], [12, 12, 24], [13, 12, 27],
+    [14, 12, 30], [14, 13, 33], [15, 13, 36], [16, 13, 40], [16, 14, 44], [17, 14, 48],
+    [18, 14, 52], [18, 15, 57], [20, 15, 62], [20, 16, 68], [22, 16, 76], [24, 16, 86]
+  ].map(function (s, i) {
+    return { stage: i + 1, rows: s[0], cols: s[1], mines: s[2] };
+  });
+
+  ZenMines.JOURNEY = JOURNEY;
 
   ZenMines.prototype.initGrid = function () {
     this.grid = [];
@@ -167,6 +183,10 @@
       return { changed: false, status: this.status };
     }
 
+    if (this.paused) {
+      return { changed: false, status: this.status };
+    }
+
     var cell = this.grid[row][col];
     if (cell.revealed || cell.flagged) {
       return { changed: false, status: this.status };
@@ -176,8 +196,10 @@
     if (this.firstClick) {
       this.placeMines(row, col);
       this.firstClick = false;
-      this.status = 'playing';
-      this.startTime = Date.now();
+      if (this.status === 'ready') {
+        this.status = 'playing';
+        this.startTime = Date.now();
+      }
     }
 
     // Hit a mine!
@@ -261,7 +283,7 @@
     if (row < 0 || row >= this.rows || col < 0 || col >= this.cols) {
       return { changed: false };
     }
-    if (this.status === 'won' || this.status === 'lost') {
+    if (this.status === 'won' || this.status === 'lost' || this.paused) {
       return { changed: false, status: this.status };
     }
 
@@ -270,7 +292,7 @@
       return { changed: false, status: this.status };
     }
 
-    if (this.firstClick) {
+    if (this.status === 'ready') {
       this.status = 'playing';
       this.startTime = Date.now();
     }
@@ -299,7 +321,7 @@
     if (row < 0 || row >= this.rows || col < 0 || col >= this.cols) {
       return { changed: false };
     }
-    if (this.status !== 'playing') {
+    if (this.status !== 'playing' || this.paused) {
       return { changed: false, status: this.status };
     }
 
@@ -405,11 +427,36 @@
   };
 
   ZenMines.prototype.getElapsedTime = function () {
-    if (!this.startTime) return this.elapsedSeconds;
+    if (this.paused || !this.startTime) return this.elapsedSeconds;
     if (this.status === 'won' || this.status === 'lost') {
-      return Math.floor(((this.endTime || Date.now()) - this.startTime) / 1000);
+      return Math.floor(((this.endTime || Date.now()) - this.startTime) / 1000) + this.elapsedSeconds;
     }
     return Math.floor((Date.now() - this.startTime) / 1000) + this.elapsedSeconds;
+  };
+
+  /**
+   * Freezes the clock. Returns true when the game was actually paused.
+   */
+  ZenMines.prototype.pause = function () {
+    if (this.status !== 'playing' || this.paused) return false;
+    this.elapsedSeconds = this.getElapsedTime();
+    this.startTime = null;
+    this.paused = true;
+    return true;
+  };
+
+  /**
+   * Restarts the clock after a pause. Returns true when the game was resumed.
+   */
+  ZenMines.prototype.resume = function () {
+    if (!this.paused) return false;
+    this.paused = false;
+    if (this.status === 'playing') this.startTime = Date.now();
+    return true;
+  };
+
+  ZenMines.prototype.isPaused = function () {
+    return this.paused;
   };
 
   ZenMines.prototype.serialize = function () {
@@ -452,6 +499,8 @@
     game.flagsPlaced = data.flagsPlaced || 0;
     game.revealedCount = data.revealedCount || 0;
     game.elapsedSeconds = data.elapsedSeconds || 0;
+    // A restored in-progress game starts paused; call resume() to restart the clock.
+    game.paused = game.status === 'playing';
 
     game.grid = [];
     for (var r = 0; r < data.rows; r++) {
