@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0f172a">
   <meta name="description" content="ZenMines — Sleek, modern offline minesweeper with safe first tap, customizable difficulties, and haptics.">
   <meta name="mobile-web-app-capable" content="yes">
@@ -34,62 +34,155 @@
           <circle cx="256" cy="256" r="110" fill="#0f172a"/>
           <circle cx="256" cy="256" r="60" fill="url(#hdr-grad)"/>
         </svg>
-        <h1 class="app-title">ZenMines</h1>
+        <div class="brand-copy">
+          <h1 class="app-title">ZenMines</h1>
+          <span class="brand-caption">MINDFUL MINESWEEPER</span>
+        </div>
       </div>
 
       <div class="header-actions">
         <button id="sound-toggle" class="icon-btn" title="Toggle Sound" aria-label="Toggle Sound">🔊</button>
-        <button id="theme-toggle" class="icon-btn" title="Change Theme" aria-label="Change Theme">🌙</button>
         <button id="stats-btn" class="icon-btn" title="Statistics" aria-label="Statistics">📊</button>
         <button id="help-btn" class="icon-btn" title="How to Play" aria-label="How to Play">ℹ️</button>
+        <button id="settings-btn" class="icon-btn" title="Settings" aria-label="Settings">⚙️</button>
       </div>
     </header>
 
-    <!-- Game Status Bar -->
-    <div class="status-bar">
-      <div class="status-counter" title="Remaining Mines">
-        <span class="badge-icon">🚩</span>
-        <span id="mine-count">010</span>
-      </div>
+    <main class="game-main">
+      <section class="game-intro" aria-labelledby="game-heading">
+        <div>
+          <p class="eyebrow">A QUIETER KIND OF CHALLENGE</p>
+          <h2 id="game-heading">Take a breath. Find your next move.</h2>
+          <p class="intro-copy">Every first tap is safe. The rest is yours to uncover.</p>
+        </div>
+        <span class="offline-pill"><span class="status-dot" aria-hidden="true"></span>Ready offline</span>
+      </section>
 
-      <button id="face-btn" class="reset-btn" title="Restart Game" aria-label="Restart Game">😊</button>
+      <!-- Game Status Bar -->
+      <div class="status-bar" aria-label="Current game status">
+        <div class="status-counter" title="Remaining Mines">
+          <span class="badge-icon" aria-hidden="true">🚩</span>
+          <span class="counter-copy"><span class="counter-label">Mines left</span><span id="mine-count">010</span></span>
+        </div>
 
-      <div class="status-counter" title="Time Elapsed">
-        <span class="badge-icon">⏱️</span>
-        <span id="timer">00:00</span>
+        <button id="face-btn" class="reset-btn" title="Start a new game" aria-label="Start a new game">😊</button>
+
+        <div class="status-counter timer-counter" title="Time Elapsed">
+          <span class="badge-icon" aria-hidden="true">⏱️</span>
+          <span class="counter-copy"><span class="counter-label">Time</span><span id="timer">00:00</span></span>
+        </div>
       </div>
-    </div>
 
     <!-- Controls Toolbar -->
     <div class="toolbar">
-      <select id="diff-select" class="diff-select" aria-label="Select Difficulty">
-        <option value="beginner">Beginner (9x9, 10 Mines)</option>
-        <option value="intermediate">Intermediate (16x16, 40 Mines)</option>
-        <option value="expert">Expert (16x30, 99 Mines)</option>
-      </select>
+      <button id="pause-btn" class="hint-btn pause-btn" title="Pause" aria-label="Pause game">⏸ Pause</button>
+      <span id="mode-label" class="mode-label">Beginner</span>
 
-      <div class="mode-toggle-group">
-        <button id="mode-reveal" class="mode-btn active">⛏️ Dig</button>
-        <button id="mode-flag" class="mode-btn">🚩 Flag</button>
+      <div class="mode-toggle-group" role="group" aria-label="Cell action">
+        <button id="mode-reveal" class="mode-btn active" aria-pressed="true">⛏️ <span>Dig</span></button>
+        <button id="mode-flag" class="mode-btn" aria-pressed="false">🚩 <span>Flag</span></button>
       </div>
 
       <button id="hint-btn" class="hint-btn" title="Deduce Safe Move">💡 Hint</button>
     </div>
 
     <!-- Board Area -->
-    <div class="board-wrapper">
-      <div id="board-grid" class="board-grid"></div>
-    </div>
+      <div class="board-wrapper" role="region" aria-label="Minesweeper board">
+        <div id="board-grid" class="board-grid" aria-label="Game board"></div>
+      </div>
 
     <!-- Win Banner Notification -->
     <div id="win-banner" class="win-banner"></div>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <!-- Stats Modal -->
-    <div id="stats-modal" class="modal-overlay">
+    <!-- Pause Modal -->
+    <div id="pause-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="pause-title">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 class="modal-title">Your Statistics</h2>
-          <button class="icon-btn close-modal-btn">✕</button>
+          <h2 id="pause-title" class="modal-title">Paused</h2>
+          <button class="icon-btn close-modal-btn" data-action="resume" aria-label="Resume game">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="pause-info"><span id="pause-mode">Beginner</span> · <span id="pause-time">00:00</span></p>
+          <div class="menu-stack">
+            <button id="pause-resume" class="btn-primary btn-wide">▶ Resume</button>
+            <button id="pause-restart" class="btn-secondary btn-wide">↻ Restart board</button>
+            <button id="pause-settings" class="btn-secondary btn-wide">⚙️ Settings</button>
+            <button id="pause-menu" class="btn-secondary btn-wide">🏠 Main menu</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result (win / game over) Modal -->
+    <div id="result-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="result-title">
+      <div class="modal-content result-content">
+        <div class="result-emoji" id="result-emoji" aria-hidden="true">🎉</div>
+        <h2 id="result-title" class="modal-title result-title">Board cleared!</h2>
+        <p id="result-text" class="result-text"></p>
+        <div class="result-stats">
+          <div class="stat-card"><div id="result-time" class="stat-value">00:00</div><div class="stat-label">Time</div></div>
+          <div class="stat-card"><div id="result-best" class="stat-value">--</div><div class="stat-label">Best</div></div>
+        </div>
+        <div class="menu-stack">
+          <button id="result-next" class="btn-primary btn-wide">Next stage ➜</button>
+          <button id="result-retry" class="btn-secondary btn-wide">↻ Play again</button>
+          <button id="result-review" class="btn-secondary btn-wide">👁 View board</button>
+          <button id="result-menu" class="btn-secondary btn-wide">🏠 Main menu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="settings-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="settings-title" class="modal-title">Settings</h2>
+          <button class="icon-btn close-modal-btn" aria-label="Close settings">✕</button>
+        </div>
+        <div class="modal-body settings-body">
+          <label class="setting-row"><span>Sound effects</span><input type="checkbox" id="set-sound" class="switch"></label>
+          <label class="setting-row"><span>Vibration (haptics)</span><input type="checkbox" id="set-haptics" class="switch"></label>
+          <label class="setting-row"><span>Long-press for opposite action</span><input type="checkbox" id="set-longpress" class="switch"></label>
+          <label class="setting-row"><span>Theme</span>
+            <select id="set-theme" class="diff-select">
+              <option value="dark">Zen Dark</option>
+              <option value="light">Paper Light</option>
+              <option value="neon">Neon Pulse</option>
+            </select>
+          </label>
+          <div class="setting-row danger-row">
+            <span>Reset progress &amp; statistics</span>
+            <button id="set-reset" class="btn-danger">Reset</button>
+          </div>
+          <p class="settings-note">Progress, statistics and settings are stored only on this device.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-primary close-modal-btn">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Journey Stage Select Modal -->
+    <div id="journey-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="journey-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="journey-title" class="modal-title">Journey</h2>
+          <button class="icon-btn close-modal-btn" aria-label="Close journey">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="journey-sub">Clear a stage to unlock the next. <span id="journey-progress">0 / 24</span> cleared.</p>
+          <div id="journey-grid" class="journey-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Modal -->
+    <div id="stats-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="stats-title">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="stats-title" class="modal-title">Your Statistics</h2>
+          <button class="icon-btn close-modal-btn" aria-label="Close statistics">✕</button>
         </div>
         <div class="modal-body">
           <div class="stats-grid">
@@ -110,19 +203,19 @@
               <div class="stat-label">Best Streak</div>
             </div>
           </div>
-          <div style="margin-top: 16px;">
-            <h3 style="font-size: 0.95rem; margin-bottom: 8px; color: var(--text);">Best Times</h3>
-            <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border);">
+          <div class="best-times">
+            <h3>Best times</h3>
+            <div class="best-time-row">
               <span>Beginner (9x9)</span>
-              <strong id="stat-best-beg" style="color: var(--accent);">--</strong>
+              <strong id="stat-best-beg">--</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border);">
+            <div class="best-time-row">
               <span>Intermediate (16x16)</span>
-              <strong id="stat-best-int" style="color: var(--accent);">--</strong>
+              <strong id="stat-best-int">--</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 4px 0;">
+            <div class="best-time-row">
               <span>Expert (16x30)</span>
-              <strong id="stat-best-exp" style="color: var(--accent);">--</strong>
+              <strong id="stat-best-exp">--</strong>
             </div>
           </div>
         </div>
@@ -133,18 +226,23 @@
     </div>
 
     <!-- Help Modal -->
-    <div id="help-modal" class="modal-overlay">
+    <div id="help-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="help-title">
       <div class="modal-content">
         <div class="modal-header">
-          <h2 class="modal-title">How to Play ZenMines</h2>
-          <button class="icon-btn close-modal-btn">✕</button>
+          <h2 id="help-title" class="modal-title">How to play ZenMines</h2>
+          <button class="icon-btn close-modal-btn" aria-label="Close how to play">✕</button>
         </div>
         <div class="modal-body">
-          <p style="margin-bottom: 8px;">• <strong>First Tap Guarantee:</strong> Your first click is always 100% safe and opens an expanse.</p>
-          <p style="margin-bottom: 8px;">• <strong>Numbers:</strong> Each number tells you how many mines touch that specific square (1 to 8).</p>
-          <p style="margin-bottom: 8px;">• <strong>Flagging:</strong> Right-click or switch to 🚩 Flag mode to mark hidden mines.</p>
-          <p style="margin-bottom: 8px;">• <strong>Chording:</strong> Tap any revealed number whose flags match its count to instantly uncover remaining neighbors.</p>
-          <p>• <strong>Offline:</strong> Fully cached and playable anytime without network.</p>
+          <ul class="help-list">
+            <li><strong>First tap is safe.</strong> Your opening move always avoids mines and clears some space.</li>
+            <li><strong>Read the numbers.</strong> Each one counts the mines touching that square.</li>
+            <li><strong>Mark your hunches.</strong> Right-click or switch to Flag mode to place a flag.</li>
+            <li><strong>Move faster.</strong> Tap a number with the matching flags to reveal its neighbours.</li>
+            <li><strong>Long-press</strong> a square to do the opposite of the current Dig/Flag mode.</li>
+            <li><strong>Need a breather?</strong> Tap Pause — the clock stops and the board is hidden.</li>
+            <li><strong>Journey mode</strong> has 24 stages that grow bigger and denser. Clear one to unlock the next.</li>
+            <li><strong>Play anywhere.</strong> ZenMines works offline once loaded, and your unfinished board is saved automatically.</li>
+          </ul>
         </div>
         <div class="modal-footer">
           <button class="btn-primary close-modal-btn">Got it</button>
@@ -152,12 +250,49 @@
       </div>
     </div>
 
+    </main>
+
+    <!-- Main Menu -->
+    <section id="menu-screen" class="menu-screen open" aria-labelledby="menu-title">
+      <div class="menu-card">
+        <svg class="menu-logo" viewBox="0 0 512 512" aria-hidden="true">
+          <circle cx="256" cy="256" r="180" fill="url(#hdr-grad)"/>
+          <g stroke="#ffffff" stroke-width="36" stroke-linecap="round">
+            <line x1="256" y1="30" x2="256" y2="482"/>
+            <line x1="30" y1="256" x2="482" y2="256"/>
+            <line x1="96" y1="96" x2="416" y2="416"/>
+            <line x1="96" y1="416" x2="416" y2="96"/>
+          </g>
+          <circle cx="256" cy="256" r="110" fill="#0f172a"/>
+          <circle cx="256" cy="256" r="60" fill="url(#hdr-grad)"/>
+        </svg>
+        <h2 id="menu-title" class="menu-title">ZenMines</h2>
+        <p class="menu-tag">Mindful minesweeper · works offline</p>
+        <div class="menu-stack">
+          <button id="menu-continue" class="btn-primary btn-wide" hidden>▶ Continue <small id="menu-continue-info"></small></button>
+          <button id="menu-journey" class="btn-primary btn-wide">🧭 Journey <small id="menu-journey-info">Stage 1 / 24</small></button>
+        </div>
+        <p class="menu-label">Classic</p>
+        <div class="menu-diff">
+          <button class="btn-secondary" data-diff="beginner">Beginner<small>9×9 · 10 mines</small></button>
+          <button class="btn-secondary" data-diff="intermediate">Intermediate<small>16×16 · 40 mines</small></button>
+          <button class="btn-secondary" data-diff="expert">Expert<small>16×30 · 99 mines</small></button>
+        </div>
+        <div class="menu-row">
+          <button id="menu-settings" class="btn-ghost">⚙️ Settings</button>
+          <button id="menu-stats" class="btn-ghost">📊 Stats</button>
+          <button id="menu-help" class="btn-ghost">ℹ️ How to play</button>
+        </div>
+      </div>
+    </section>
+
     <!-- Footer -->
     <footer>
       ZenMines — 100% Offline Casual Game by <a href="https://github.com/OfferPk" target="_blank" rel="noopener">OfferPk</a>
     </footer>
   </div>
 
+  <script src="ads.js"></script>
   <script src="logic.js"></script>
   <script src="audio.js"></script>
   <script src="game.js"></script>

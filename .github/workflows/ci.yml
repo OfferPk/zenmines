@@ -31,3 +31,6 @@ jobs:
 
       - name: Build web assets
         run: npm run build
+
+      - name: Headless browser smoke test
+        run: npm run smoke

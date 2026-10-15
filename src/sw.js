@@ -3,7 +3,7 @@
  * Fully offline cache-first strategy.
  */
 
-const CACHE_NAME = 'zenmines-v1.0.0';
+const CACHE_NAME = 'zenmines-v1.1.0';
 const ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const ASSETS = [
   './logic.js',
   './audio.js',
   './game.js',
+  './ads.js',
   './manifest.webmanifest',
   './icon-192.png',
   './icon-512.png',
